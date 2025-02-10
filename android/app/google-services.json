@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "283966448367",
+    "project_id": "capybara-b97af",
+    "storage_bucket": "capybara-b97af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283966448367:android:6946066bd44c58ba3cf11a",
+        "android_client_info": {
+          "package_name": "com.example.capybara"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVzKtLIxNWJGAZzTpyDNjeFocktmK9cgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

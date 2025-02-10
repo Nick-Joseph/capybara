@@ -26,17 +26,19 @@ class Studies {
 
   Studies({this.protocolSection, this.hasResults});
 
-  Studies.fromJson(Map<String, dynamic> json) {
-    protocolSection = json['protocolSection'] != null
-        ? ProtocolSection.fromJson(json['protocolSection'])
-        : null;
-    hasResults = json['hasResults'];
+  factory Studies.fromJson(Map<String, dynamic> json) {
+    return Studies(
+      protocolSection: json['protocolSection'] != null
+          ? ProtocolSection.fromJson(json['protocolSection'])
+          : ProtocolSection(), // Provide a default value to prevent null reference errors
+      hasResults: json['hasResults'] ?? false, // Default to `false` if null
+    );
   }
 
   Map<String, dynamic> toJson() {
     return {
       if (protocolSection != null) 'protocolSection': protocolSection!.toJson(),
-      'hasResults': hasResults,
+      'hasResults': hasResults ?? false,
     };
   }
 }
@@ -371,34 +373,3 @@ class Contacts {
     };
   }
 }
-
-
-
-
-// class Study {
-//   final String? studyId;
-//   final String? studyDescription;
-//   final List? location;
-
-//   // Add other relevant fields
-
-//   Study({
-//     required this.studyId,
-//     required this.studyDescription,
-//     required this.location,
-
-//     // Initialize other fields
-//   });
-
-//   factory Study.fromJson(Map<String, dynamic> json) {
-//     return Study(
-//       studyId: json['protocolSection']['identificationModule']['nctId'],
-//       studyDescription: json['protocolSection']['descriptionModule']
-//           ['briefSummary'],
-//       location: json['protocolSection']?['contactsLocationsModule']
-//           ?['locations'],
-//       // Parse other fields
-//     );
-//   }
-// }
-
