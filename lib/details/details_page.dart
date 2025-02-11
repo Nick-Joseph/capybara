@@ -2,16 +2,55 @@ import 'package:capybara/services/firestore_service.dart';
 import 'package:capybara/services/study_class.dart';
 import 'package:capybara/widgets/profile_avatar.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-class StudyDetailPage extends StatelessWidget {
+class StudyDetailPage extends StatefulWidget {
   final Studies study;
+
+  const StudyDetailPage({super.key, required this.study});
+
+  @override
+  State<StudyDetailPage> createState() => _StudyDetailPageState();
+}
+
+class _StudyDetailPageState extends State<StudyDetailPage> {
   final FirestoreService firestoreService = FirestoreService();
-  StudyDetailPage({super.key, required this.study});
-  void _saveTrial(BuildContext context) async {
-    await firestoreService.saveTrial(study);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text("Saved to your trials!")),
-    );
+  bool isSaved = false; // Track if the trial is saved
+
+  @override
+  void initState() {
+    super.initState();
+    _checkIfSaved();
+  }
+
+  /// Check if the study is saved in Firestore
+  void _checkIfSaved() async {
+    bool saved = await firestoreService.isTrialSaved(
+        widget.study.protocolSection!.identificationModule!.nctId!);
+    setState(() {
+      isSaved = saved;
+    });
+  }
+
+  /// Save or Unsave the study
+  void _toggleSave(BuildContext context) async {
+    if (isSaved) {
+      await firestoreService.removeTrial(
+          widget.study.protocolSection!.identificationModule!.nctId!);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Removed from your trials!")),
+      );
+    } else {
+      await firestoreService.saveTrial(widget.study);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Saved to your trials!")),
+      );
+    }
+
+    // Update UI
+    setState(() {
+      isSaved = !isSaved;
+    });
   }
 
   @override
@@ -34,20 +73,22 @@ class StudyDetailPage extends StatelessWidget {
                     Expanded(
                       child: Column(
                         children: [
-                          (study.protocolSection?.contactsLocationsModule
+                          (widget.study.protocolSection?.contactsLocationsModule
                                       ?.overallOfficials?.first.name !=
                                   null)
-                              ? Text(study
+                              ? Text(widget
+                                  .study
                                   .protocolSection!
                                   .contactsLocationsModule!
                                   .overallOfficials!
                                   .first
                                   .name!)
-                              : Text('Officals name not available'),
-                          (study.protocolSection?.contactsLocationsModule
+                              : Text('Official name not available'),
+                          (widget.study.protocolSection?.contactsLocationsModule
                                       ?.overallOfficials?.first.role !=
                                   null)
-                              ? Text(study
+                              ? Text(widget
+                                  .study
                                   .protocolSection!
                                   .contactsLocationsModule!
                                   .overallOfficials!
@@ -55,10 +96,11 @@ class StudyDetailPage extends StatelessWidget {
                                   .role!
                                   .replaceAll(RegExp('_'), ' '))
                               : Text('Role not available'),
-                          (study.protocolSection?.contactsLocationsModule
+                          (widget.study.protocolSection?.contactsLocationsModule
                                       ?.locations?.first.facility !=
                                   null)
-                              ? Text(study
+                              ? Text(widget
+                                  .study
                                   .protocolSection!
                                   .contactsLocationsModule!
                                   .locations!
@@ -77,7 +119,7 @@ class StudyDetailPage extends StatelessWidget {
                   endIndent: 30,
                 ),
                 Text(
-                  study.protocolSection?.identificationModule?.briefTitle
+                  widget.study.protocolSection?.identificationModule?.briefTitle
                       as String,
                 ),
                 Divider(
@@ -86,16 +128,20 @@ class StudyDetailPage extends StatelessWidget {
                   indent: 30,
                   endIndent: 30,
                 ),
-                (study.protocolSection?.outcomesModule?.primaryOutcomes?.first
-                            .description !=
+                (widget.study.protocolSection?.outcomesModule?.primaryOutcomes
+                            ?.first.description !=
                         null)
-                    ? Text(study.protocolSection!.outcomesModule!
+                    ? Text(widget.study.protocolSection!.outcomesModule!
                         .primaryOutcomes?.first.description as String)
                     : (Text('Description not available')),
+                SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: () => _saveTrial(context),
-                  icon: Icon(Icons.save),
-                  label: Text("Save Trial"),
+                  onPressed: () {
+                    _toggleSave(context);
+                    context.pop();
+                  },
+                  icon: Icon(isSaved ? Icons.bookmark : Icons.bookmark_border),
+                  label: Text(isSaved ? "Unsave Trial" : "Save Trial"),
                 ),
               ],
             ),

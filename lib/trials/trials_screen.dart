@@ -1,6 +1,8 @@
+import 'package:capybara/routing/app_router.dart';
 import 'package:capybara/services/study_class.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../services/firestore_service.dart';
 
 class SavedTrialsScreen extends ConsumerWidget {
@@ -12,17 +14,19 @@ class SavedTrialsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Colors.red.shade100,
-          title: Text("Saved Trials", style: TextStyle(color: Colors.black))),
+        backgroundColor: Colors.red.shade100,
+        title:
+            const Text("Saved Trials", style: TextStyle(color: Colors.black)),
+      ),
       body: StreamBuilder<List<Studies>>(
         stream: firestoreService.getSavedTrials(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
+            return const Center(child: CircularProgressIndicator());
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text("No saved trials found."));
+            return const Center(child: Text("No saved trials found."));
           }
 
           final savedTrials = snapshot.data!;
@@ -35,22 +39,34 @@ class SavedTrialsScreen extends ConsumerWidget {
               return Card(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(color: Colors.black26, width: 1),
+                  side: const BorderSide(color: Colors.black26, width: 1),
                 ),
                 child: ListTile(
                   title: Text(
-                      trial.protocolSection?.identificationModule?.briefTitle
-                          as String,
-                      style: TextStyle(fontWeight: FontWeight.bold)),
-                  subtitle: Text(trial.protocolSection?.identificationModule
-                      ?.officialTitle as String),
+                    trial.protocolSection?.identificationModule?.briefTitle ??
+                        "No Title Available",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: Text(
+                    trial.protocolSection?.identificationModule
+                            ?.officialTitle ??
+                        "No Official Title",
+                  ),
                   trailing: IconButton(
-                    icon: Icon(Icons.delete, color: Colors.red),
+                    icon: const Icon(Icons.delete, color: Colors.red),
                     onPressed: () {
-                      firestoreService.removeTrial(trial.protocolSection!
-                          .identificationModule!.nctId as String);
+                      firestoreService.removeTrial(
+                        trial.protocolSection?.identificationModule?.nctId ??
+                            "",
+                      );
                     },
                   ),
+                  onTap: () {
+                    context.pushNamed(
+                      AppRoute.details.name,
+                      extra: trial, // Pass study object
+                    );
+                  },
                 ),
               );
             },

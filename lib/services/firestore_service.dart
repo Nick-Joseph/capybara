@@ -3,76 +3,87 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 class FirestoreService {
-  final FirebaseFirestore db = FirebaseFirestore.instance;
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  /// Save a trial to the user's saved trials collection
+  /// Get current user ID safely
+  String? get _userId => _auth.currentUser?.uid;
+
+  /// Save a trial to Firestore
   Future<void> saveTrial(Studies study) async {
-    var user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
+    if (_userId == null) return;
 
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(user.uid)
-        .collection('savedTrials')
-        .doc(study.protocolSection?.identificationModule?.nctId ??
-            "default_id") // Unique ID
-        .set(study.toJson()); // Save properly formatted JSON
-  }
+    String studyId =
+        study.protocolSection?.identificationModule?.nctId ?? "default_id";
 
-  /// Remove a saved trial
-  Future<void> removeTrial(String studyId) async {
-    final user = _auth.currentUser;
-    if (user == null) return;
-
-    await db
-        .collection('users')
-        .doc(user.uid)
-        .collection('savedTrials')
-        .doc(studyId)
-        .delete();
-  }
-
-  Stream<List<Studies>> getSavedTrials() {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) {
-      return Stream.value([]); // Return empty list if user is not logged in
+    try {
+      await _db
+          .collection('users')
+          .doc(_userId)
+          .collection('savedTrials')
+          .doc(studyId)
+          .set(study.toJson());
+      print("Study $studyId saved successfully.");
+    } catch (e) {
+      print("Error saving study $studyId: $e");
     }
-    FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .collection('savedTrials')
-        .get()
-        .then((snapshot) {
-      //Prints firebase doc
-      //for (var doc in snapshot.docs) {
-      //   print("Document ID: ${doc.id}");
-      //   print(
-      //       "Firestore Data: ${doc.data()}");
-      // }
-    });
+  }
 
-    return FirebaseFirestore.instance
+  /// Remove a saved trial from Firestore
+  Future<void> removeTrial(String studyId) async {
+    if (_userId == null) return;
+
+    try {
+      await _db
+          .collection('users')
+          .doc(_userId)
+          .collection('savedTrials')
+          .doc(studyId)
+          .delete();
+      print("Study $studyId removed successfully.");
+    } catch (e) {
+      print("Error removing study $studyId: $e");
+    }
+  }
+
+  /// Check if a trial is saved
+  Future<bool> isTrialSaved(String studyId) async {
+    if (_userId == null) return false;
+
+    try {
+      var doc = await _db
+          .collection('users')
+          .doc(_userId)
+          .collection('savedTrials')
+          .doc(studyId)
+          .get();
+      return doc.exists;
+    } catch (e) {
+      print("Error checking if study $studyId is saved: $e");
+      return false;
+    }
+  }
+
+  /// Get a stream of saved trials
+  Stream<List<Studies>> getSavedTrials() {
+    if (_userId == null) return Stream.value([]);
+
+    return _db
         .collection('users')
-        .doc(user.uid)
+        .doc(_userId)
         .collection('savedTrials')
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
           .map((doc) {
-            final data = doc.data();
-            if (data == null) {
-              print("Document ${doc.id} has null data.");
-              return null;
-            }
             try {
-              return Studies.fromJson(data);
+              return Studies.fromJson(doc.data());
             } catch (e) {
               print("Error parsing document ${doc.id}: $e");
               return null; // Skip problematic documents
             }
           })
-          .whereType<Studies>() // Remove any null values
+          .whereType<Studies>()
           .toList();
     });
   }
