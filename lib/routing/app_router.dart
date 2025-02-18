@@ -1,6 +1,7 @@
 import 'package:capybara/account/account_screen.dart';
 import 'package:capybara/details/details_page.dart';
 import 'package:capybara/login/login_screen.dart';
+import 'package:capybara/home/home_screen.dart';
 import 'package:capybara/search/search_screen.dart';
 import 'package:capybara/services/study_class.dart';
 import 'package:capybara/trials/trials_screen.dart';
@@ -9,10 +10,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-enum AppRoute { search, account, signIn, trials, details }
+enum AppRoute { search, account, signIn, trials, details, home }
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
+  final _shellNavigatorHomeKey =
+      GlobalKey<NavigatorState>(debugLabel: 'shellHome');
   final _shellNavigatorSearchKey =
       GlobalKey<NavigatorState>(debugLabel: 'shellSearch');
   final _shellNavigatorTrialKey =
@@ -47,13 +50,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         branches: [
           // 📌 Search Screen
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorSearchKey,
+            navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
                 path: '/',
-                name: AppRoute.search.name,
+                name: AppRoute.home.name,
                 pageBuilder: (context, state) => NoTransitionPage(
-                  child: SearchScreen(),
+                  child: HomeScreen(),
                 ),
                 routes: [
                   GoRoute(
@@ -64,6 +67,18 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                     },
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorSearchKey,
+            routes: [
+              GoRoute(
+                path: '/search',
+                name: AppRoute.search.name,
+                pageBuilder: (context, state) => NoTransitionPage(
+                  child: SearchScreen(),
+                ),
               ),
             ],
           ),
@@ -139,14 +154,25 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
           backgroundColor: Colors.white,
           selectedIndex: navigationShell.currentIndex,
           destinations: const [
-            NavigationDestination(label: 'Search', icon: Icon(Icons.search)),
             NavigationDestination(
-                label: 'Saved Trials', icon: Icon(Icons.biotech_sharp)),
+              label: 'Home',
+              icon: Icon(Icons.home),
+            ),
+            NavigationDestination(
+              label: 'Search',
+              icon: Icon(Icons.search),
+            ),
+            NavigationDestination(
+              label: 'Saved Trials',
+              icon: Icon(Icons.biotech_sharp),
+            ),
             // NavigationDestination(
             //     label: 'My Doctors', icon: Icon(Icons.add_box_rounded)),
             // NavigationDestination(label: 'Bookmarks', icon: Icon(Icons.bookmark)),
             NavigationDestination(
-                label: 'My Account', icon: Icon(Icons.person)),
+              label: 'My Account',
+              icon: Icon(Icons.person),
+            ),
           ],
           onDestinationSelected: _goBranch,
         ),
