@@ -22,6 +22,8 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GlobalKey<NavigatorState>(debugLabel: 'shellTrial');
   final _shellNavigatorAccountKey =
       GlobalKey<NavigatorState>(debugLabel: 'shellAccount');
+  final _shellNavigatorDetailsKey =
+      GlobalKey<NavigatorState>(debugLabel: 'shellDetails');
 
   return GoRouter(
     initialLocation: '/login',
@@ -48,7 +50,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
         },
         branches: [
-          // 📌 Search Screen
+          // 📌 Home Screen
           StatefulShellBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
@@ -58,18 +60,10 @@ final goRouterProvider = Provider<GoRouter>((ref) {
                 pageBuilder: (context, state) => NoTransitionPage(
                   child: HomeScreen(),
                 ),
-                routes: [
-                  GoRoute(
-                    path: 'details',
-                    name: AppRoute.details.name,
-                    builder: (context, state) {
-                      return StudyDetailPage(study: state.extra! as Studies);
-                    },
-                  ),
-                ],
               ),
             ],
           ),
+          // 📌 Search Screen
           StatefulShellBranch(
             navigatorKey: _shellNavigatorSearchKey,
             routes: [
@@ -108,9 +102,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorDetailsKey,
+            routes: [
+              GoRoute(
+                path: '/details',
+                name: AppRoute.details.name,
+                builder: (context, state) {
+                  return StudyDetailPage(study: state.extra! as Studies);
+                },
+              ),
+            ],
+          ),
         ],
       ),
-      // 🔑 **Login Route (No Shell)**
+      // 🔑 **Login Route**
       GoRoute(
         path: '/login',
         name: AppRoute.signIn.name,
@@ -118,6 +124,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           child: LoginScreen(),
         ),
       ),
+      // 📌 **Details Page (Top-Level Route)**
     ],
   );
 });
@@ -150,7 +157,7 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
           border: Border(top: BorderSide(color: Colors.black, width: 0.5)),
         ),
         child: NavigationBar(
-          indicatorColor: Colors.red.shade100,
+          indicatorColor: Colors.teal,
           backgroundColor: Colors.white,
           selectedIndex: navigationShell.currentIndex,
           destinations: const [
@@ -166,9 +173,6 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
               label: 'Saved Trials',
               icon: Icon(Icons.biotech_sharp),
             ),
-            // NavigationDestination(
-            //     label: 'My Doctors', icon: Icon(Icons.add_box_rounded)),
-            // NavigationDestination(label: 'Bookmarks', icon: Icon(Icons.bookmark)),
             NavigationDestination(
               label: 'My Account',
               icon: Icon(Icons.person),

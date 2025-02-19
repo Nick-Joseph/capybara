@@ -38,12 +38,16 @@ class _StudyDetailPageState extends State<StudyDetailPage> {
       await firestoreService.removeTrial(
           widget.study.protocolSection!.identificationModule!.nctId!);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Removed from your trials!")),
+        SnackBar(
+          content: Text("Removed from your trials!"),
+        ),
       );
     } else {
       await firestoreService.saveTrial(widget.study);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Saved to your trials!")),
+        SnackBar(
+          content: Text("Saved to your trials!"),
+        ),
       );
     }
 

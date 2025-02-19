@@ -36,39 +36,17 @@ Future<Study> fetchStudies({
   }
 }
 
-Future<Study> fetchStudiesFromApi({
+Future<Study?> fetchSearchStudies({
   String? query,
+  int pageSize = 20,
+  String? pageToken,
 }) async {
   final Map<String, String> params = {
-    'pageSize': '20', // Limit results per request
+    'pageSize': pageSize.toString(), // Limit the number of results
     if (query != null && query.isNotEmpty)
-      'search': query, // Use 'search' for the query
-  };
-
-  final Uri apiUrl = Uri.https('clinicaltrials.gov', '/api/v2/studies', params);
-
-  print("Fetching: $apiUrl"); // Debug URL in console
-
-  final response = await http.get(apiUrl, headers: {
-    "Accept": "application/json",
-  });
-
-  print("Response Status Code: ${response.statusCode}");
-  print("Response Body: ${response.body}");
-
-  if (response.statusCode == 200) {
-    return Study.fromJson(json.decode(response.body));
-  } else {
-    print('Error response: ${response.body}'); // Log the error response
-    throw Exception('Failed to load studies');
-  }
-}
-
-Future<Study?> fetchStudies1({String? query}) async {
-  final Map<String, String> params = {
-    'pageSize': '10', // Limit the number of results
-    if (query != null && query.isNotEmpty)
-      'query.cond': query, // Use 'term' to search for studies
+      'query.cond': query, // Use query if available
+    if (pageToken != null)
+      'pageToken': pageToken, // Include the pageToken if available
   };
 
   Uri uri = Uri.https('clinicaltrials.gov', '/api/v2/studies', params);
@@ -78,11 +56,16 @@ Future<Study?> fetchStudies1({String? query}) async {
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
 
+    // Decode the list of studies
     List<dynamic> studyList = data['studies'];
     final List<Studies> studies =
         studyList.map((json) => Studies.fromJson(json)).toList();
 
-    return Study(studies: studies);
+    // Fetch the nextPageToken for pagination
+    final String? nextPageToken = data['nextPageToken'];
+
+    // Return the studies and the nextPageToken to be used for the next fetch
+    return Study(studies: studies, nextPageToken: nextPageToken);
   } else {
     print('Error response: ${response.body}'); // Log the error response
     throw Exception('Failed to load studies');

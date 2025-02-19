@@ -1,3 +1,4 @@
+import 'package:capybara/routing/app_router.dart';
 import 'package:capybara/services/get_clinical_trails_api.dart';
 import 'package:capybara/services/study_class.dart';
 import 'package:flutter/material.dart';
@@ -82,7 +83,6 @@ class HomeScreenState extends State<HomeScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('More studies have been loaded!'),
-          duration: Duration(seconds: 2),
         ),
       );
     } catch (e) {
@@ -95,55 +95,41 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          scrolledUnderElevation: 0.0,
-          title: Text(
-            'Clinical Trails',
-            style: TextStyle(color: Colors.black),
-          ),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.teal, // App bar color
+        elevation: 0.0,
+        title: Text(
+          'Clinical Trials',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
-        body: studies.isEmpty && isLoading
-            ? _buildShimmerList() // Show shimmer when initially loading
-            : ListView.builder(
-                controller: _scrollController,
-                itemCount: studies.length + (isLoading ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (isLoading && index == studies.length) {
-                    return _buildShimmerCard(); // Show shimmer at the bottom
-                  }
-
-                  final study = studies[index];
-                  return Card(
-                    color: Colors.red.shade100,
-                    child: ListTile(
-                      title: Text(study.protocolSection?.identificationModule
-                              ?.briefTitle ??
-                          ''),
-                      subtitle: Text(study.protocolSection?.identificationModule
-                              ?.officialTitle ??
-                          ''),
-                      onTap: () {
-                        context.go('/details', extra: study);
-                      },
-                    ),
-                  );
-                },
-              ),
       ),
+      body: studies.isEmpty && isLoading
+          ? _buildShimmerList() // Show shimmer when initially loading
+          : ListView.builder(
+              controller: _scrollController,
+              itemCount: studies.length + (isLoading ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (isLoading && index == studies.length) {
+                  return _buildShimmerCard(); // Show shimmer at the bottom
+                }
+
+                final study = studies[index];
+                return _buildStudyCard(study);
+              },
+            ),
     );
   }
 
-  /// Builds a full-page shimmer list to mimic the study cards
+  // Builds the shimmer list for the initial loading screen
   Widget _buildShimmerList() {
     return ListView.builder(
-      itemCount: 10, // Show 5 shimmer cards initially
+      itemCount: 10, // Show 10 shimmer cards initially
       itemBuilder: (context, index) => _buildShimmerCard(),
     );
   }
 
-  /// Builds a single shimmer card that matches the study UI
+  // Builds a shimmer card for loading state
   Widget _buildShimmerCard() {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -152,7 +138,7 @@ class HomeScreenState extends State<HomeScreen> {
         highlightColor: Colors.grey.shade100,
         child: Card(
           shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
           child: Padding(
             padding: EdgeInsets.all(16.0),
             child: Column(
@@ -178,6 +164,46 @@ class HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Builds a study card
+  Widget _buildStudyCard(Studies study) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12.0),
+        ),
+        color: Colors.white,
+        elevation: 5.0,
+        child: ListTile(
+          contentPadding: EdgeInsets.all(16.0),
+          title: Text(
+            study.protocolSection?.identificationModule?.briefTitle ??
+                'No Brief Title',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16.0,
+              color: Colors.black,
+            ),
+          ),
+          subtitle: Text(
+            study.protocolSection?.identificationModule?.officialTitle ??
+                'No Official Title',
+            style: TextStyle(
+              fontSize: 14.0,
+              color: Colors.grey[600],
+            ),
+          ),
+          onTap: () {
+            context.pushNamed(
+              AppRoute.details.name,
+              extra: study, // Pass the study object
+            );
+          },
         ),
       ),
     );

@@ -1,10 +1,20 @@
 import 'package:capybara/services/study_class.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  final savedTrialsProvider = StreamProvider<List<Studies>>((ref) {
+    final firestoreService = FirestoreService();
+    return firestoreService
+        .getSavedTrials(); // This is a Stream that will be listened to.
+  });
+  final firestoreServiceProvider = Provider<FirestoreService>((ref) {
+    return FirestoreService(); // Initialize FirestoreService
+  });
 
   /// Get current user ID safely
   String? get _userId => _auth.currentUser?.uid;
@@ -80,7 +90,7 @@ class FirestoreService {
               return Studies.fromJson(doc.data());
             } catch (e) {
               print("Error parsing document ${doc.id}: $e");
-              return null; // Skip problematic documents
+              return null;
             }
           })
           .whereType<Studies>()

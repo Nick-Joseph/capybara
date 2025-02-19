@@ -2,7 +2,6 @@ import 'package:capybara/routing/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:capybara/login/login_screen.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -13,8 +12,9 @@ class AccountScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.red.shade100,
-        title: const Text("My Account", style: TextStyle(color: Colors.black)),
+        backgroundColor: Colors.teal,
+        title: const Text("My Account",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ),
       body: Center(
         child: Padding(
@@ -35,7 +35,7 @@ class AccountScreen extends StatelessWidget {
                 icon: const Icon(Icons.logout),
                 label: const Text("Logout"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red.shade300,
+                  backgroundColor: Colors.teal,
                   foregroundColor: Colors.white,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 30, vertical: 12),

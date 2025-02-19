@@ -12,22 +12,33 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
+  bool _isLoading = false; // Track loading state
+  bool _isEmailValid = true; // Track email validity
 
   void signUp() async {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    User? user = await _authService.signUp(email, password);
+    if (_validateInputs(email, password)) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    if (user != null) {
-      GoRouter.of(context).go('/'); //
-      print('Sign Up Successful: ${user.email}');
-      // Navigate to home screen
-    } else {
-      print('Sign Up Failed');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Sign Failed. Check your credentials')),
-      );
+      User? user = await _authService.signUp(email, password);
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (user != null) {
+        GoRouter.of(context).go('/');
+        print('Sign Up Successful: ${user.email}');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Sign Up Failed. Please check your credentials.')),
+        );
+      }
     }
   }
 
@@ -35,15 +46,50 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    final user = await _authService.signIn(email, password);
+    if (_validateInputs(email, password)) {
+      setState(() {
+        _isLoading = true;
+      });
 
-    if (user != null) {
-      GoRouter.of(context).go('/'); // Redirect after login
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login Failed. Check your credentials')),
-      );
+      final user = await _authService.signIn(email, password);
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      if (user != null) {
+        GoRouter.of(context).go('/');
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('Login Failed. Please check your credentials.')),
+        );
+      }
     }
+  }
+
+  bool _validateInputs(String email, String password) {
+    if (email.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please fill in all fields.')),
+      );
+      return false;
+    }
+    if (!_isEmailValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a valid email.')),
+      );
+      return false;
+    }
+    return true;
+  }
+
+  void _validateEmail(String email) {
+    setState(() {
+      _isEmailValid =
+          RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$")
+              .hasMatch(email);
+    });
   }
 
   @override
@@ -56,30 +102,82 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Text(
               'Capybara!',
-              style: TextStyle(fontSize: 40),
-            ),
-            Container(
-                height: 300,
-                width: 300,
-                child: Image.asset('lib/assets/loginpicture.png')),
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
+              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _signIn,
-              child: Text('Sign In'),
+            Container(
+              height: 250,
+              width: 250,
+              child: Image.asset('lib/assets/loginpicture.png'),
             ),
-            ElevatedButton(
-              onPressed: signUp,
-              child: Text('Sign Up'),
+            SizedBox(height: 30),
+            TextField(
+              controller: _emailController,
+              onChanged:
+                  _validateEmail, // Trigger email validation on text change
+              decoration: InputDecoration(
+                labelText: 'Email',
+                labelStyle: TextStyle(color: Colors.teal),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                errorText: !_isEmailValid
+                    ? 'Please enter a valid email.'
+                    : null, // Show error text when invalid
+                errorStyle: TextStyle(color: Colors.red),
+              ),
+              keyboardType: TextInputType.emailAddress,
             ),
+            SizedBox(height: 20),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                labelStyle: TextStyle(color: Colors.teal),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.teal, width: 2.0),
+                  borderRadius: BorderRadius.circular(8.0),
+                ),
+              ),
+            ),
+            SizedBox(height: 30),
+            _isLoading
+                ? CircularProgressIndicator()
+                : Column(
+                    children: [
+                      ElevatedButton(
+                        onPressed: _signIn,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          backgroundColor: Colors.teal,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text('Sign In', style: TextStyle(fontSize: 18)),
+                      ),
+                      SizedBox(height: 10),
+                      ElevatedButton(
+                        onPressed: signUp,
+                        style: ElevatedButton.styleFrom(
+                          padding: EdgeInsets.symmetric(vertical: 16.0),
+                          backgroundColor: Colors.teal[300],
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
+                        ),
+                        child: Text('Sign Up', style: TextStyle(fontSize: 18)),
+                      ),
+                    ],
+                  ),
           ],
         ),
       ),
