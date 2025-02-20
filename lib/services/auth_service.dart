@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
@@ -54,6 +53,10 @@ class AuthService {
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+      if (googleAuth.idToken == null) {
+        print("Google Sign-In failed: Missing ID Token.");
+        return null;
+      }
 
       final UserCredential userCredential =
           await FirebaseAuth.instance.signInWithCredential(credential);
