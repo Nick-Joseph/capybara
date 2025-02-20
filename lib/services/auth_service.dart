@@ -1,41 +1,107 @@
+import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthService {
   final FirebaseAuth auth = FirebaseAuth.instance;
+  final GoogleSignIn googleSignIn = GoogleSignIn();
 
-  // Sign up with email & password
-  Future<User?> signUp(String email, String password) async {
+  // ✅ Email & Password Sign-Up
+  Future<UserCredential?> signUpWithEmail(String email, String password) async {
     try {
-      UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+      return await auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return userCredential.user;
     } catch (e) {
-      print('Error: $e');
+      print("Sign-Up Error: $e");
       return null;
     }
   }
 
-  // Sign in with email & password
-  Future<User?> signIn(String email, String password) async {
+  // ✅ Email & Password Sign-In
+  Future<UserCredential?> signInWithEmail(String email, String password) async {
     try {
-      UserCredential userCredential = await auth.signInWithEmailAndPassword(
+      return await auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
-      return userCredential.user;
     } catch (e) {
-      print('Error: $e');
+      print("Sign-In Error: $e");
       return null;
     }
   }
 
-  // Sign out
+  // ✅ Google Sign-In
+  Future<User?> signInWithGoogle() async {
+    try {
+      print("Google Sign-In initiated...");
+
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      if (googleUser == null) {
+        print("Google Sign-In canceled by user.");
+        return null;
+      }
+
+      print("Google user: ${googleUser.email}");
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      print("Access Token: ${googleAuth.accessToken}");
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      print("Google Sign-In successful: ${userCredential.user?.displayName}");
+
+      return userCredential.user;
+    } catch (e) {
+      print("Google Sign-In Error: $e");
+      return null;
+    }
+  }
+
+  // ✅ Apple Sign-In (iOS Only)
+  Future<User?> signInWithApple() async {
+    try {
+      print("Apple Sign-In initiated...");
+
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName
+        ],
+      );
+
+      print("Apple Credential ID Token: ${appleCredential.identityToken}");
+
+      final credential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithCredential(credential);
+      print("Apple Sign-In successful: ${userCredential.user?.displayName}");
+
+      return userCredential.user;
+    } catch (e) {
+      print("Apple Sign-In Error: $e");
+      return null;
+    }
+  }
+
+  // ✅ Sign Out
   Future<void> signOut() async {
     await auth.signOut();
+    await googleSignIn.signOut();
   }
 
-  // Get current user
+  // ✅ Get Current User
   User? get currentUser => auth.currentUser;
 }

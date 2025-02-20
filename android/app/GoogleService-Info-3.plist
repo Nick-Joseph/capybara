@@ -3,11 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>283966448367-1204ippj083qgsj9qekvb1lbj1uflckk.apps.googleusercontent.com</string>
+	<string>283966448367-320cd7vh9bdhfljttf6umuot4hup14vo.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.283966448367-1204ippj083qgsj9qekvb1lbj1uflckk</string>
-	<key>ANDROID_CLIENT_ID</key>
-	<string>283966448367-bh6knnr62iakhjdjspks122g9pdeu6ml.apps.googleusercontent.com</string>
+	<string>com.googleusercontent.apps.283966448367-320cd7vh9bdhfljttf6umuot4hup14vo</string>
 	<key>API_KEY</key>
 	<string>AIzaSyBn0C0KvLMtRCRWVklIlpXWCUUY7dGd6qw</string>
 	<key>GCM_SENDER_ID</key>
@@ -21,15 +19,15 @@
 	<key>STORAGE_BUCKET</key>
 	<string>capybara-b97af.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_GCM_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>GOOGLE_APP_ID</key>
 	<string>1:283966448367:ios:bf3609f773ebd5443cf11a</string>
 </dict>

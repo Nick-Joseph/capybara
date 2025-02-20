@@ -1,7 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../services/auth_service.dart';
+import 'dart:io';
+import 'package:capybara/widgets/sign_in_button.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -12,77 +14,10 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  bool _isLoading = false; // Track loading state
-  bool _isEmailValid = true; // Track email validity
 
-  void signUp() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-
-    if (_validateInputs(email, password)) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      User? user = await _authService.signUp(email, password);
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (user != null) {
-        GoRouter.of(context).go('/');
-        print('Sign Up Successful: ${user.email}');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Sign Up Failed. Please check your credentials.')),
-        );
-      }
-    }
-  }
-
-  void _signIn() async {
-    String email = _emailController.text.trim();
-    String password = _passwordController.text.trim();
-
-    if (_validateInputs(email, password)) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      final user = await _authService.signIn(email, password);
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (user != null) {
-        GoRouter.of(context).go('/');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-              content: Text('Login Failed. Please check your credentials.')),
-        );
-      }
-    }
-  }
-
-  bool _validateInputs(String email, String password) {
-    if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all fields.')),
-      );
-      return false;
-    }
-    if (!_isEmailValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a valid email.')),
-      );
-      return false;
-    }
-    return true;
-  }
+  bool _isLoading = false;
+  bool _isEmailValid = true;
+  bool _isPasswordValid = true;
 
   void _validateEmail(String email) {
     setState(() {
@@ -92,9 +27,76 @@ class _LoginScreenState extends State<LoginScreen> {
     });
   }
 
+  void _validatePassword(String password) {
+    setState(() {
+      _isPasswordValid = password.length >= 6;
+    });
+  }
+
+  void _signInWithEmail() async {
+    if (!_isEmailValid || !_isPasswordValid) return;
+
+    setState(() => _isLoading = true);
+    final user = await _authService.signInWithEmail(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+    setState(() => _isLoading = false);
+
+    if (user != null) {
+      GoRouter.of(context).go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login Failed. Check credentials.')),
+      );
+    }
+  }
+
+  void _signUpWithEmail() async {
+    if (!_isEmailValid || !_isPasswordValid) return;
+
+    setState(() => _isLoading = true);
+    final user = await _authService.signUpWithEmail(
+      _emailController.text.trim(),
+      _passwordController.text.trim(),
+    );
+    setState(() => _isLoading = false);
+
+    if (user != null) {
+      GoRouter.of(context).go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Sign-Up Failed. Try again.')),
+      );
+    }
+  }
+
+  void _signInWithGoogle() async {
+    final user = await _authService.signInWithGoogle();
+    if (user != null) {
+      GoRouter.of(context).go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Google Sign-In Failed.')),
+      );
+    }
+  }
+
+  void _signInWithApple() async {
+    final user = await _authService.signInWithApple();
+    if (user != null) {
+      GoRouter.of(context).go('/');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Apple Sign-In Failed.')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -102,82 +104,169 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             Text(
               'Capybara!',
-              style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2D3142),
+              ),
             ),
             SizedBox(height: 20),
-            Container(
-              height: 250,
-              width: 250,
-              child: Image.asset('lib/assets/loginpicture.png'),
-            ),
+            Image.asset('lib/assets/loginpicture.png', height: 250, width: 250),
             SizedBox(height: 30),
-            TextField(
-              controller: _emailController,
-              onChanged:
-                  _validateEmail, // Trigger email validation on text change
-              decoration: InputDecoration(
-                labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.teal),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.teal, width: 2.0),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                errorText: !_isEmailValid
-                    ? 'Please enter a valid email.'
-                    : null, // Show error text when invalid
-                errorStyle: TextStyle(color: Colors.red),
-              ),
-              keyboardType: TextInputType.emailAddress,
+            _buildTextField(
+              _emailController,
+              "Email",
+              _validateEmail,
+              !_isEmailValid,
+              "Invalid email format",
             ),
             SizedBox(height: 20),
-            TextField(
-              controller: _passwordController,
+            _buildTextField(
+              _passwordController,
+              "Password",
+              _validatePassword,
+              !_isPasswordValid,
+              "Password must be at least 6 characters",
               obscureText: true,
-              decoration: InputDecoration(
-                labelText: 'Password',
-                labelStyle: TextStyle(color: Colors.teal),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.teal, width: 2.0),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-              ),
             ),
             SizedBox(height: 30),
             _isLoading
                 ? CircularProgressIndicator()
                 : Column(
                     children: [
-                      ElevatedButton(
-                        onPressed: _signIn,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          backgroundColor: Colors.teal,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: Text('Sign In', style: TextStyle(fontSize: 18)),
-                      ),
+                      _buildButton("Sign In", _signInWithEmail),
                       SizedBox(height: 10),
-                      ElevatedButton(
-                        onPressed: signUp,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: 16.0),
-                          backgroundColor: Colors.teal[300],
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                          ),
-                        ),
-                        child: Text('Sign Up', style: TextStyle(fontSize: 18)),
-                      ),
+                      _buildButton("Sign Up", _signUpWithEmail,
+                          isOutlined: true),
+                      SizedBox(height: 20),
+                      _buildSocialButtons(),
                     ],
                   ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Custom Text Field with Red Border for Errors
+  Widget _buildTextField(
+    TextEditingController controller,
+    String labelText,
+    Function(String) onChanged,
+    bool hasError,
+    String errorMessage, {
+    bool obscureText = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: hasError ? Colors.red : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: TextField(
+            controller: controller,
+            obscureText: obscureText,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              border: InputBorder.none,
+              labelText: labelText,
+              labelStyle: TextStyle(color: Colors.grey[600]),
+            ),
+          ),
+        ),
+        if (hasError)
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 8),
+            child: Text(
+              errorMessage,
+              style: TextStyle(color: Colors.red, fontSize: 12),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // 🔹 Custom Button
+  Widget _buildButton(String text, VoidCallback onPressed,
+      {bool isOutlined = false}) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isOutlined ? Colors.white : Color(0xFF2D3142),
+          foregroundColor: isOutlined ? Color(0xFF2D3142) : Colors.white,
+          side: isOutlined
+              ? BorderSide(color: Color(0xFF2D3142))
+              : BorderSide.none,
+          padding: EdgeInsets.symmetric(vertical: 14),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+        onPressed: onPressed,
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  // 🔹 Social Sign-In Buttons
+  Widget _buildSocialButtons() {
+    return Column(
+      children: [
+        _buildSocialButton(
+          "Continue with Google",
+          "lib/assets/google_button.png",
+          _signInWithGoogle,
+        ),
+        if (Platform.isIOS) SizedBox(height: 12),
+        if (Platform.isIOS)
+          _buildSocialButton(
+            "Continue with Apple",
+            "lib/assets/apple_buttonx2.png",
+            _signInWithApple,
+            isDark: true,
+          ),
+      ],
+    );
+  }
+
+  // 🔹 Custom Social Button
+  Widget _buildSocialButton(String text, String asset, VoidCallback onPressed,
+      {bool isDark = false}) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isDark ? Colors.black : Colors.white,
+          foregroundColor: isDark ? Colors.white : Colors.black,
+          padding: EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: isDark
+                ? BorderSide.none
+                : BorderSide(color: Colors.grey.shade300),
+          ),
+          elevation: isDark ? 0 : 2,
+        ),
+        onPressed: onPressed,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            Image.asset(asset, height: 34),
+            SizedBox(width: 12),
+            Text(
+              text,
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ),

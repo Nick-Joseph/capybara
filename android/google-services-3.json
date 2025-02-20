@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "283966448367",
+    "project_id": "capybara-b97af",
+    "storage_bucket": "capybara-b97af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:283966448367:android:6946066bd44c58ba3cf11a",
+        "android_client_info": {
+          "package_name": "com.example.capybara"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "283966448367-bh6knnr62iakhjdjspks122g9pdeu6ml.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.capybara",
+            "certificate_hash": "3da71adea5ff6e21c3234962032b88965ff0c9a2"
+          }
+        },
+        {
+          "client_id": "283966448367-0uv47q8ptbsf3nprvf4a95mddake8b83.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDVzKtLIxNWJGAZzTpyDNjeFocktmK9cgc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "283966448367-0uv47q8ptbsf3nprvf4a95mddake8b83.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "283966448367-1204ippj083qgsj9qekvb1lbj1uflckk.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.capybara"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

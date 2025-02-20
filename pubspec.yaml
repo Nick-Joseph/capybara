@@ -42,6 +42,8 @@ dependencies:
   firebase_auth: ^5.4.1
   cloud_firestore: ^5.6.2
   shimmer: ^3.0.0
+  google_sign_in: ^6.2.2
+  sign_in_with_apple: ^6.1.4
 
 dev_dependencies:
   flutter_test:
@@ -69,6 +71,9 @@ flutter:
   uses-material-design: true
   assets:
     - lib/assets/loginpicture.png
+    - lib/assets/apple_button.png
+    - lib/assets/apple_buttonx2.png
+    - lib/assets/google_button.png
 
   # To add assets to your application, add an assets section, like this:
   # assets:
