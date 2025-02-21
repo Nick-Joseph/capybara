@@ -220,55 +220,43 @@ class _LoginScreenState extends State<LoginScreen> {
 
   // 🔹 Social Sign-In Buttons
   Widget _buildSocialButtons() {
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildSocialButton(
-          "Continue with Google",
-          "lib/assets/google_button.png",
-          _signInWithGoogle,
-        ),
-        if (Platform.isIOS) SizedBox(height: 12),
+        _buildPillIconButton("lib/assets/google_button.png", _signInWithGoogle),
+        if (Platform.isIOS) SizedBox(width: 16),
         if (Platform.isIOS)
-          _buildSocialButton(
-            "Continue with Apple",
-            "lib/assets/apple_buttonx2.png",
-            _signInWithApple,
-            isDark: true,
-          ),
+          _buildPillIconButton(
+              "lib/assets/apple_buttonx2.png", _signInWithApple,
+              isDark: true),
       ],
     );
   }
 
-  // 🔹 Custom Social Button
-  Widget _buildSocialButton(String text, String asset, VoidCallback onPressed,
+// 🔹 Custom Pill Icon Button
+  Widget _buildPillIconButton(String asset, VoidCallback onPressed,
       {bool isDark = false}) {
-    return SizedBox(
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isDark ? Colors.black : Colors.white,
-          foregroundColor: isDark ? Colors.white : Colors.black,
-          padding: EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: isDark
-                ? BorderSide.none
-                : BorderSide(color: Colors.grey.shade300),
-          ),
-          elevation: isDark ? 0 : 2,
-        ),
-        onPressed: onPressed,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            Image.asset(asset, height: 34),
-            SizedBox(width: 12),
-            Text(
-              text,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(50),
+      child: Container(
+        width: 75, // Circular pill shape
+        height: 75,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.black : Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
           ],
+          border: isDark ? null : Border.all(color: Colors.grey.shade300),
         ),
+        padding: EdgeInsets.all(12),
+        child: Image.asset(asset, fit: BoxFit.contain),
       ),
     );
   }
