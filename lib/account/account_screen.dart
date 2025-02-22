@@ -2,13 +2,23 @@ import 'package:capybara/routing/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart'; // Add this import
+import 'package:url_launcher/url_launcher.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
-  // Link to your donation page (e.g., BuyMeACoffee, PayPal, etc.)
   final String donationLink = 'https://buymeacoffee.com/njoseph3215';
+  final String termsOfServiceUrl = 'https://yourwebsite.com/terms';
+  final String privacyPolicyUrl = 'https://yourwebsite.com/privacy';
+
+  Future<void> _launchUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +37,7 @@ class AccountScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 16), // Removed the profile picture
+              const SizedBox(height: 16),
               Text(
                 user?.email ?? "No email found",
                 style:
@@ -39,10 +49,8 @@ class AccountScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.logout),
-                  label: const Text(
-                    "Logout",
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
+                  label: const Text("Logout",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
@@ -51,42 +59,44 @@ class AccountScreen extends StatelessWidget {
                   ),
                   onPressed: () async {
                     await FirebaseAuth.instance.signOut();
-                    context.goNamed(
-                        AppRoute.signIn.name); // Redirect to login screen
+                    context.goNamed(AppRoute.signIn.name);
                   },
                 ),
               ),
               const SizedBox(height: 24),
-
               SizedBox(
                 width: 250,
                 height: 50,
                 child: ElevatedButton.icon(
-                    icon: const Icon(Icons.coffee),
-                    label: const Text(
-                      "Buy the Dev a Coffee",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 30, vertical: 12),
-                    ),
-                    onPressed: () async {
-                      // Launch the donation link
-                      Uri donationUri = Uri.parse(donationLink);
-
-                      if (await canLaunchUrl(donationUri)) {
-                        await launchUrl(
-                          donationUri,
-                          mode: LaunchMode
-                              .inAppBrowserView, // Opens in Safari/Chrome
-                        );
-                      } else {
-                        throw 'Could not launch $donationUri';
-                      }
-                    }),
+                  icon: const Icon(Icons.coffee),
+                  label: const Text("Buy the Dev a Coffee",
+                      style: TextStyle(fontWeight: FontWeight.bold)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.orange,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 30, vertical: 12),
+                  ),
+                  onPressed: () => _launchUrl(donationLink),
+                ),
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () => _launchUrl(termsOfServiceUrl),
+                child: const Text(
+                  "Terms of Service",
+                  style: TextStyle(
+                      color: Colors.blue, decoration: TextDecoration.underline),
+                ),
+              ),
+              const SizedBox(height: 8),
+              GestureDetector(
+                onTap: () => _launchUrl(privacyPolicyUrl),
+                child: const Text(
+                  "Privacy Policy",
+                  style: TextStyle(
+                      color: Colors.blue, decoration: TextDecoration.underline),
+                ),
               ),
             ],
           ),

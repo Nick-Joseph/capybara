@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/auth_service.dart';
 import 'dart:io';
 import 'package:capybara/widgets/sign_in_button.dart';
@@ -18,6 +19,17 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _isEmailValid = true;
   bool _isPasswordValid = true;
+  final String termsOfServiceUrl = 'https://yourwebsite.com/terms';
+  final String privacyPolicyUrl = 'https://yourwebsite.com/privacy';
+
+  Future<void> _launchUrl(String url) async {
+    Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 
   void _validateEmail(String email) {
     setState(() {
@@ -140,6 +152,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           isOutlined: true),
                       SizedBox(height: 20),
                       _buildSocialButtons(),
+                      const SizedBox(height: 16),
+                      GestureDetector(
+                        onTap: () => _launchUrl(termsOfServiceUrl),
+                        child: const Text("Terms of Service",
+                            style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline)),
+                      ),
+                      const SizedBox(height: 8),
+                      GestureDetector(
+                        onTap: () => _launchUrl(privacyPolicyUrl),
+                        child: const Text("Privacy Policy",
+                            style: TextStyle(
+                                color: Colors.blue,
+                                decoration: TextDecoration.underline)),
+                      ),
                     ],
                   ),
           ],
