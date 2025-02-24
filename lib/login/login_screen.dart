@@ -19,8 +19,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _isEmailValid = true;
   bool _isPasswordValid = true;
-  final String termsOfServiceUrl = 'https://yourwebsite.com/terms';
-  final String privacyPolicyUrl = 'https://yourwebsite.com/privacy';
+  final String termsOfServiceUrl =
+      'https://capybara-b97af.web.app/terms_of_service.html';
+  final String privacyPolicyUrl =
+      'https://capybara-b97af.web.app/privacy_policy.html';
 
   Future<void> _launchUrl(String url) async {
     Uri uri = Uri.parse(url);
@@ -107,70 +109,81 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Capybara!',
-              style: TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF2D3142),
+    return GestureDetector(
+      onTap: () {
+        FocusScope.of(context).unfocus(); // Hide keyboard when tapping outside
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(32),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Capybara!',
+                    style: TextStyle(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D3142),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Image.asset('lib/assets/loginpicture.png',
+                      height: 250, width: 250),
+                  SizedBox(height: 30),
+                  _buildTextField(
+                    _emailController,
+                    "Email",
+                    _validateEmail,
+                    !_isEmailValid,
+                    "Invalid email format",
+                  ),
+                  SizedBox(height: 20),
+                  _buildTextField(
+                    _passwordController,
+                    "Password",
+                    _validatePassword,
+                    !_isPasswordValid,
+                    "Password must be at least 6 characters",
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 30),
+                  _isLoading
+                      ? CircularProgressIndicator()
+                      : Column(
+                          children: [
+                            _buildButton("Sign In", _signInWithEmail),
+                            SizedBox(height: 10),
+                            _buildButton("Sign Up", _signUpWithEmail,
+                                isOutlined: true),
+                            SizedBox(height: 20),
+                            _buildSocialButtons(),
+                            const SizedBox(height: 16),
+                            GestureDetector(
+                              onTap: () => _launchUrl(termsOfServiceUrl),
+                              child: const Text("Terms of Service",
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline)),
+                            ),
+                            const SizedBox(height: 8),
+                            GestureDetector(
+                              onTap: () => _launchUrl(privacyPolicyUrl),
+                              child: const Text("Privacy Policy",
+                                  style: TextStyle(
+                                      color: Colors.blue,
+                                      decoration: TextDecoration.underline)),
+                            ),
+                          ],
+                        ),
+                ],
               ),
             ),
-            SizedBox(height: 20),
-            Image.asset('lib/assets/loginpicture.png', height: 250, width: 250),
-            SizedBox(height: 30),
-            _buildTextField(
-              _emailController,
-              "Email",
-              _validateEmail,
-              !_isEmailValid,
-              "Invalid email format",
-            ),
-            SizedBox(height: 20),
-            _buildTextField(
-              _passwordController,
-              "Password",
-              _validatePassword,
-              !_isPasswordValid,
-              "Password must be at least 6 characters",
-              obscureText: true,
-            ),
-            SizedBox(height: 30),
-            _isLoading
-                ? CircularProgressIndicator()
-                : Column(
-                    children: [
-                      _buildButton("Sign In", _signInWithEmail),
-                      SizedBox(height: 10),
-                      _buildButton("Sign Up", _signUpWithEmail,
-                          isOutlined: true),
-                      SizedBox(height: 20),
-                      _buildSocialButtons(),
-                      const SizedBox(height: 16),
-                      GestureDetector(
-                        onTap: () => _launchUrl(termsOfServiceUrl),
-                        child: const Text("Terms of Service",
-                            style: TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline)),
-                      ),
-                      const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () => _launchUrl(privacyPolicyUrl),
-                        child: const Text("Privacy Policy",
-                            style: TextStyle(
-                                color: Colors.blue,
-                                decoration: TextDecoration.underline)),
-                      ),
-                    ],
-                  ),
-          ],
+          ),
         ),
       ),
     );
@@ -199,6 +212,7 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           padding: EdgeInsets.symmetric(horizontal: 16),
           child: TextField(
+            keyboardType: TextInputType.emailAddress,
             controller: controller,
             obscureText: obscureText,
             onChanged: onChanged,
@@ -251,12 +265,17 @@ class _LoginScreenState extends State<LoginScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _buildPillIconButton("lib/assets/google_button.png", _signInWithGoogle),
+        _buildPillIconButton(
+          "lib/assets/google_button.png",
+          _signInWithGoogle,
+        ),
         if (Platform.isIOS) SizedBox(width: 16),
         if (Platform.isIOS)
           _buildPillIconButton(
-              "lib/assets/apple_buttonx2.png", _signInWithApple,
-              isDark: true),
+            "lib/assets/apple_buttonx2.png",
+            _signInWithApple,
+            isDark: true,
+          ),
       ],
     );
   }

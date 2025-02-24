@@ -2,15 +2,17 @@ import 'package:capybara/routing/app_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
 
   final String donationLink = 'https://buymeacoffee.com/njoseph3215';
-  final String termsOfServiceUrl = 'https://yourwebsite.com/terms';
-  final String privacyPolicyUrl = 'https://yourwebsite.com/privacy';
-
+  final String termsOfServiceUrl =
+      'https://capybara-b97af.web.app/terms_of_service.html';
+  final String privacyPolicyUrl =
+      'https://capybara-b97af.web.app/privacy_policy.html';
   Future<void> _launchUrl(String url) async {
     Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -58,6 +60,7 @@ class AccountScreen extends StatelessWidget {
                         horizontal: 30, vertical: 12),
                   ),
                   onPressed: () async {
+                    await GoogleSignIn().signOut();
                     await FirebaseAuth.instance.signOut();
                     context.goNamed(AppRoute.signIn.name);
                   },
