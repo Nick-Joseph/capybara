@@ -1,4 +1,5 @@
 import 'package:capybara/routing/app_router.dart';
+import 'package:capybara/services/firestore_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -20,6 +21,32 @@ class AccountScreen extends StatelessWidget {
     } else {
       throw 'Could not launch $url';
     }
+  }
+
+  void confirmAccountDeletion(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text("Delete Account"),
+          content: Text("Are you sure? This action cannot be undone."),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text("Cancel"),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(dialogContext);
+                await deleteUserAccount(context);
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: Text("Delete"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -72,7 +99,7 @@ class AccountScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.coffee),
-                  label: const Text("Buy the Dev a Coffee",
+                  label: const Text("Support the Dev",
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,
@@ -100,6 +127,11 @@ class AccountScreen extends StatelessWidget {
                   style: TextStyle(
                       color: Colors.blue, decoration: TextDecoration.underline),
                 ),
+              ),
+              TextButton(
+                onPressed: () => confirmAccountDeletion(context),
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                child: Text("Delete My Account"),
               ),
             ],
           ),

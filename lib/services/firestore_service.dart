@@ -1,7 +1,9 @@
 import 'package:capybara/services/study_class.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 class FirestoreService {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
@@ -96,5 +98,32 @@ class FirestoreService {
           .whereType<Studies>()
           .toList();
     });
+  }
+}
+
+Future<void> deleteUserAccount(BuildContext context) async {
+  try {
+    User? user = FirebaseAuth.instance.currentUser;
+
+    if (user == null) return;
+
+    String uid = user.uid;
+
+    // Step 1: Delete user data from Firestore
+    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+
+    // Step 2: Delete user authentication record
+    await user.delete();
+
+    // Step 3: Sign out the user
+    await FirebaseAuth.instance.signOut();
+    // Step 4: Navigate to login page using GoRouter
+    if (context.mounted) {
+      context.go('/login'); // Redirect to login screen
+    }
+
+    print("Account deleted successfully.");
+  } catch (e) {
+    print("Error deleting account: $e");
   }
 }
