@@ -99,7 +99,7 @@ class AccountScreen extends StatelessWidget {
                 height: 50,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.coffee),
-                  label: const Text("Support the Dev",
+                  label: const Text("About the Dev",
                       style: TextStyle(fontWeight: FontWeight.bold)),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.orange,

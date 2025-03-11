@@ -2,6 +2,7 @@ import 'package:capybara/account/account_screen.dart';
 import 'package:capybara/details/details_page.dart';
 import 'package:capybara/login/login_screen.dart';
 import 'package:capybara/home/home_screen.dart';
+import 'package:capybara/login/sign_up_screen.dart';
 import 'package:capybara/search/search_screen.dart';
 import 'package:capybara/services/study_class.dart';
 import 'package:capybara/trials/trials_screen.dart';
@@ -10,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-enum AppRoute { search, account, signIn, trials, details, home }
+enum AppRoute { search, account, signIn, trials, details, home, signUp }
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -22,22 +23,23 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       GlobalKey<NavigatorState>(debugLabel: 'shellTrial');
   final _shellNavigatorAccountKey =
       GlobalKey<NavigatorState>(debugLabel: 'shellAccount');
-  final _shellNavigatorDetailsKey =
-      GlobalKey<NavigatorState>(debugLabel: 'shellDetails');
 
   return GoRouter(
-    initialLocation: '/login',
+    initialLocation: '/home',
     debugLogDiagnostics: true,
     navigatorKey: _rootNavigatorKey,
     redirect: (context, state) {
       final user = FirebaseAuth.instance.currentUser;
-      final isLoggingIn = state.uri.path == '/login';
+      final isLoggingInOrSigningUp =
+          state.uri.path == '/login' || state.uri.path == '/signUp';
 
-      if (user == null && !isLoggingIn) {
-        return '/login'; // Redirect to login if not authenticated
+      // Allow access to home & search without login
+      if (user == null &&
+          (state.uri.path == '/trials' || state.uri.path == '/account')) {
+        return '/login'; // Redirect to login if trying to access restricted features
       }
 
-      if (user != null && isLoggingIn) {
+      if (user != null && isLoggingInOrSigningUp) {
         return '/'; // Redirect authenticated users to home
       }
 
@@ -50,12 +52,12 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           return ScaffoldWithNestedNavigation(navigationShell: navigationShell);
         },
         branches: [
-          // 📌 Home Screen
+          // 📌 Home Screen (Available to Everyone)
           StatefulShellBranch(
             navigatorKey: _shellNavigatorHomeKey,
             routes: [
               GoRoute(
-                path: '/',
+                path: '/home',
                 name: AppRoute.home.name,
                 pageBuilder: (context, state) => NoTransitionPage(
                   child: HomeScreen(),
@@ -63,7 +65,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 📌 Search Screen
+          // 📌 Search Screen (Available to Everyone)
           StatefulShellBranch(
             navigatorKey: _shellNavigatorSearchKey,
             routes: [
@@ -76,47 +78,41 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               ),
             ],
           ),
-          // 📌 Saved Trials
+          // 📌 Saved Trials (Restricted)
           StatefulShellBranch(
             navigatorKey: _shellNavigatorTrialKey,
             routes: [
               GoRoute(
                 path: '/trials',
                 name: AppRoute.trials.name,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: SavedTrialsScreen(),
-                ),
+                pageBuilder: (context, state) {
+                  final user = FirebaseAuth.instance.currentUser;
+                  return NoTransitionPage(
+                    child: user == null ? LoginScreen() : SavedTrialsScreen(),
+                  );
+                },
               ),
             ],
           ),
-          // 📌 Account
+          // 📌 Account/Profile (Restricted)
           StatefulShellBranch(
             navigatorKey: _shellNavigatorAccountKey,
             routes: [
               GoRoute(
                 path: '/account',
                 name: AppRoute.account.name,
-                pageBuilder: (context, state) => NoTransitionPage(
-                  child: AccountScreen(),
-                ),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorDetailsKey,
-            routes: [
-              GoRoute(
-                path: '/details',
-                name: AppRoute.details.name,
-                builder: (context, state) {
-                  return StudyDetailPage(study: state.extra! as Studies);
+                pageBuilder: (context, state) {
+                  final user = FirebaseAuth.instance.currentUser;
+                  return NoTransitionPage(
+                    child: user == null ? LoginScreen() : AccountScreen(),
+                  );
                 },
               ),
             ],
           ),
         ],
       ),
-      // 🔑 **Login Route**
+      // 🔑 **Login & Sign-Up Routes**
       GoRoute(
         path: '/login',
         name: AppRoute.signIn.name,
@@ -124,7 +120,19 @@ final goRouterProvider = Provider<GoRouter>((ref) {
           child: LoginScreen(),
         ),
       ),
-      // 📌 **Details Page (Top-Level Route)**
+      GoRoute(
+        path: '/signUp',
+        name: AppRoute.signUp.name,
+        builder: (context, state) => SignUpScreen(),
+      ),
+      // 📌 **Details Page (Available to Everyone)**
+      GoRoute(
+        path: '/details',
+        name: AppRoute.details.name,
+        builder: (context, state) {
+          return StudyDetailPage(study: state.extra! as Studies);
+        },
+      ),
     ],
   );
 });
@@ -134,52 +142,64 @@ class ScaffoldWithNestedNavigation extends StatelessWidget {
     Key? key,
     required this.navigationShell,
   }) : super(key: key ?? const ValueKey('ScaffoldWithNestedNavigation'));
+
   final StatefulNavigationShell navigationShell;
 
-  void _goBranch(int index) {
+  void _goBranch(int index, BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
+    if (index == 2 || index == 3) {
+      if (user == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Please log in to access this feature.")),
+        );
+        return;
+      }
+    }
+
     navigationShell.goBranch(
       index,
-      // A common pattern when using bottom navigation bars is to support
-      // navigating to the initial location when tapping the item that is
-      // already active. This example demonstrates how to support this behavior,
-      // using the initialLocation parameter of goBranch.
       initialLocation: index == navigationShell.currentIndex,
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser;
+
     return Scaffold(
       body: navigationShell,
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          border: Border(top: BorderSide(color: Colors.black, width: 0.5)),
-        ),
-        child: NavigationBar(
-          indicatorColor: Colors.teal,
-          backgroundColor: Colors.white,
-          selectedIndex: navigationShell.currentIndex,
-          destinations: const [
-            NavigationDestination(
-              label: 'Home',
-              icon: Icon(Icons.home),
+      bottomNavigationBar: NavigationBar(
+        indicatorColor: Colors.teal,
+        backgroundColor: Colors.white,
+        selectedIndex: navigationShell.currentIndex,
+        destinations: [
+          NavigationDestination(label: 'Home', icon: Icon(Icons.home)),
+          NavigationDestination(label: 'Search', icon: Icon(Icons.search)),
+          NavigationDestination(
+            label: 'Saved Trials',
+            icon: Icon(Icons.biotech_sharp,
+                color: user == null ? Colors.grey : null),
+          ),
+          NavigationDestination(
+            label: user == null
+                ? 'Sign In'
+                : 'My Account', // 👈 Change label for guest users
+            icon: Icon(
+              user == null ? Icons.login : Icons.person,
+              color: user == null
+                  ? Colors.blue
+                  : null, // 👈 Highlight login option for guests
             ),
-            NavigationDestination(
-              label: 'Search',
-              icon: Icon(Icons.search),
-            ),
-            NavigationDestination(
-              label: 'Saved Trials',
-              icon: Icon(Icons.biotech_sharp),
-            ),
-            NavigationDestination(
-              label: 'My Account',
-              icon: Icon(Icons.person),
-            ),
-          ],
-          onDestinationSelected: _goBranch,
-        ),
+          ),
+        ],
+        onDestinationSelected: (index) {
+          if (index == 3 && user == null) {
+            GoRouter.of(context).go('/login'); // 👈 Send guest to login screen
+          } else {
+            _goBranch(index, context);
+          }
+        },
       ),
     );
   }

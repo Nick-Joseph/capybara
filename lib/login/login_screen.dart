@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (user != null) {
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Login Failed. Check credentials.')),
@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = false);
 
     if (user != null) {
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Sign-Up Failed. Try again.')),
@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _signInWithGoogle() async {
     final user = await _authService.signInWithGoogle();
     if (user != null) {
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Google Sign-In Failed.')),
@@ -99,7 +99,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _signInWithApple() async {
     final user = await _authService.signInWithApple();
     if (user != null) {
-      GoRouter.of(context).go('/');
+      GoRouter.of(context).go('/home');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Apple Sign-In Failed.')),
@@ -158,8 +158,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             _buildButton("Sign In", _signInWithEmail),
                             SizedBox(height: 10),
-                            _buildButton("Sign Up", _signUpWithEmail,
+                            _buildButton("Sign Up", () => context.go('/signUp'),
                                 isOutlined: true),
+                            _buildGuestButton(
+                                context), // 👈 Add Continue as Guest Button
                             SizedBox(height: 20),
                             _buildSocialButtons(),
                             const SizedBox(height: 16),
@@ -304,6 +306,18 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         padding: EdgeInsets.all(12),
         child: Image.asset(asset, fit: BoxFit.contain),
+      ),
+    );
+  }
+
+  Widget _buildGuestButton(BuildContext context) {
+    return TextButton(
+      onPressed: () =>
+          GoRouter.of(context).go('/home'), // 🚀 Navigate to Free Version
+      child: Text(
+        "Continue Without Logging In",
+        style: TextStyle(
+            color: Colors.blue, fontSize: 16, fontWeight: FontWeight.bold),
       ),
     );
   }
