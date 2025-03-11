@@ -3,9 +3,9 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>283966448367-1204ippj083qgsj9qekvb1lbj1uflckk.apps.googleusercontent.com</string>
+	<string>283966448367-900rv2sel28sgfpnn5mcgfphklam79p1.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.283966448367-1204ippj083qgsj9qekvb1lbj1uflckk</string>
+	<string>com.googleusercontent.apps.283966448367-900rv2sel28sgfpnn5mcgfphklam79p1</string>
 	<key>ANDROID_CLIENT_ID</key>
 	<string>283966448367-bh6knnr62iakhjdjspks122g9pdeu6ml.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
@@ -15,22 +15,22 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.example.capybara</string>
+	<string>com.capybara</string>
 	<key>PROJECT_ID</key>
 	<string>capybara-b97af</string>
 	<key>STORAGE_BUCKET</key>
 	<string>capybara-b97af.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_GCM_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:283966448367:ios:bf3609f773ebd5443cf11a</string>
+	<string>1:283966448367:ios:3553449dbf3a8c383cf11a</string>
 </dict>
 </plist>
