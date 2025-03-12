@@ -59,55 +59,57 @@ class _SignUpScreenState extends State<SignUpScreen> {
         appBar: AppBar(title: Text("Sign Up")),
         body: Padding(
           padding: EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('lib/assets/loginpicture.png',
-                  height: 250, width: 250),
-              SizedBox(height: 30),
-              Text(
-                'Welcomne to Capybara!',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF2D3142),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('lib/assets/loginpicture.png',
+                    height: 250, width: 250),
+                SizedBox(height: 30),
+                Text(
+                  'Welcomne to Capybara!',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D3142),
+                  ),
                 ),
-              ),
-              SizedBox(height: 30),
-              Text(
-                'Lets Create an Account',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 30),
-              _buildTextField(
-                _emailController,
-                "Email",
-                _validateEmail,
-                !_isEmailValid,
-                "Invalid email format",
-              ),
-              SizedBox(height: 20),
-              _buildTextField(
-                _passwordController,
-                "Password",
-                _validatePassword,
-                !_isPasswordValid,
-                "Password must be at least 6 characters",
-                obscureText: true,
-              ),
-              SizedBox(height: 30),
-              _isLoading
-                  ? CircularProgressIndicator()
-                  : _buildButton("Sign Up", _signUpWithEmail),
-              SizedBox(height: 20),
-              GestureDetector(
-                onTap: () => GoRouter.of(context).go('/login'),
-                child: Text(
-                  "Already have an account? Sign in",
-                  style: TextStyle(color: Colors.blue),
+                SizedBox(height: 30),
+                Text(
+                  'Lets Create an Account',
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
+                SizedBox(height: 30),
+                _buildTextField(
+                  _emailController,
+                  "Email",
+                  _validateEmail,
+                  !_isEmailValid,
+                  "Invalid email format",
+                ),
+                SizedBox(height: 20),
+                _buildTextField(
+                  _passwordController,
+                  "Password",
+                  _validatePassword,
+                  !_isPasswordValid,
+                  "Password must be at least 6 characters",
+                  obscureText: true,
+                ),
+                SizedBox(height: 30),
+                _isLoading
+                    ? CircularProgressIndicator()
+                    : _buildButton("Sign Up", _signUpWithEmail),
+                SizedBox(height: 20),
+                GestureDetector(
+                  onTap: () => GoRouter.of(context).go('/login'),
+                  child: Text(
+                    "Already have an account? Sign in",
+                    style: TextStyle(color: Colors.blue),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
